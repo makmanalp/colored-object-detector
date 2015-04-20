@@ -8,8 +8,7 @@ class DetectorState(object):
         self.fps = None
         self.current_image = None
 
-    def update(self, image, detection):
-        self.current_image = image
+    def update_detections(self, detection):
         self.detections.append(detection)
 
     @property

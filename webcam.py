@@ -1,9 +1,12 @@
 import numpy as np
 import cv2
 import cv2.cv as cv
+import math
 
 from detector_state import DetectorState
 from detection import Detection, Blob
+
+from filter_heuristics import (AbnormalSizeHeuristic, LargestHeuristic)
 
 """
 Ideas:
@@ -17,7 +20,7 @@ Heuristics:
 """
 
 
-state = DetectorState((640, 480), 128, 5)
+detector_state = DetectorState((640, 480), 128, 5)
 
 
 def cap_camera(state):
@@ -66,14 +69,71 @@ def threshold_hsv(img):
     mask = cv2.inRange(img, lower_blue, upper_blue)
     return cv2.bitwise_and(img, img, mask=mask)
 
+blob_params = cv2.SimpleBlobDetector_Params()
+blob_params.minThreshold = 0
+blob_params.maxThreshold = 255
+blob_params.filterByArea = True
+blob_params.minArea = 10
+blob_detector = cv2.SimpleBlobDetector(blob_params)
+
 cap = cap_file("./white_cylinder.mjpeg")
 
+heuristics = [
+    AbnormalSizeHeuristic(),
+    LargestHeuristic()
+]
+
 while(True):
+
+    # Get a frame
     ret, frame = cap.read()
 
+    # Threshold it
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
     result = threshold_hsv(hsv)
+    detector_state.current_image = result
+
+    # Run detection
+    # TODO: find a way around this conversion
+    thresh = cv2.cvtColor(result, cv2.COLOR_HSV2BGR)
+    thresh = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+    #_, thresh = cv2.threshold(result, 1, 254, cv2.THRESH_BINARY)
+    contours, hierarchy = cv2.findContours(thresh,
+                                           cv2.RETR_TREE,
+                                           cv2.CHAIN_APPROX_SIMPLE)
+
+    blobs = []
+    for contour in contours:
+        (x, y), size = cv2.minEnclosingCircle(contour)
+        blobs.append(Blob(x, y, int(math.ceil(size))))
+
+    for blob in blobs:
+        if 100 > blob.size > 8:
+            cv.Circle(cv.fromarray(frame), (int(blob.x), int(blob.y)), blob.size, (0, 0, 255),
+                      thickness=1, lineType=8, shift=0)
+        else:
+            cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), blob.size, (0, 255, 0),
+                      thickness=1, lineType=8, shift=0)
+
+
+    # areas = [cv2.contourArea(c) for c in contours]
+    # max_index = np.argmax(areas)
+    # cnt=contours[max_index]
+
+    #cv2.drawContours(result, contours, -1, (255, 0, 0), 3)
+
+    # Run Filter Heuristics
+    detection = Detection(blobs)
+    for heuristic in heuristics:
+        #heuristic.run(detection, detector_state)
+        pass
+
+    # detection.chosen_blob = chosen
+
+    # Update State
+    detector_state.update_detections(detection)
+
+    # Check Failure Cases
 
     # Display the resulting frame
     cv2.imshow('original', frame)

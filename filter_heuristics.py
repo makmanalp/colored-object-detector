@@ -19,6 +19,10 @@ class PhysicalSizeHeuristic(Heuristic):
 class AbnormalSizeHeuristic(Heuristic):
     """Filter blobs that are just too large or too small to be realistic."""
 
+    def __init__(self, min_size=2, max_size=100):
+        self.min_size = min_size
+        self.max_size = max_size
+
     def filter(self, detection, detector_state):
         pass
 
