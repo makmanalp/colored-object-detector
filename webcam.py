@@ -76,7 +76,7 @@ blob_params.filterByArea = True
 blob_params.minArea = 10
 blob_detector = cv2.SimpleBlobDetector(blob_params)
 
-cap = cap_file("./white_cylinder.mjpeg")
+cap = cap_file("./white_cylinder.wmv")
 
 heuristics = [
     AbnormalSizeHeuristic(),
@@ -87,6 +87,8 @@ while(True):
 
     # Get a frame
     ret, frame = cap.read()
+    if frame is None:
+        break
 
     # Threshold it
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
