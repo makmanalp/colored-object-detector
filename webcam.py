@@ -1,3 +1,5 @@
+# TODO: show graphs of heuristic stack etc
+
 import numpy as np
 import cv2
 import cv2.cv as cv
@@ -7,6 +9,7 @@ import math
 from detector_state import DetectorState
 from detection import Detection, Blob
 
+from failure_cases import (TooManyResultsFailure)
 from filter_heuristics import (AbnormalSizeHeuristic, LargestHeuristic)
 
 """
@@ -77,11 +80,15 @@ blob_params.filterByArea = True
 blob_params.minArea = 10
 blob_detector = cv2.SimpleBlobDetector(blob_params)
 
-cap = cap_file("./white_cylinder.mjpeg")
+cap = cap_file("./sun_shade_grass-cylinder.mjpeg")
 
 heuristics = [
     AbnormalSizeHeuristic(),
     LargestHeuristic()
+]
+
+failure_cases = [
+    TooManyResultsFailure(max_results=4),
 ]
 
 while(True):
@@ -109,24 +116,14 @@ while(True):
     for contour in contours:
         (x, y), size = cv2.minEnclosingCircle(contour)
         blobs.append(Blob(x, y, int(math.ceil(size))))
-
-    for blob in blobs:
-        if 100 > blob.size > 8:
-            cv.Circle(cv.fromarray(frame), (int(blob.x), int(blob.y)), blob.size, (0, 0, 255),
-                      thickness=1, lineType=8, shift=0)
-        else:
-            cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), blob.size, (0, 255, 0),
-                      thickness=1, lineType=8, shift=0)
-
+    detection = Detection(blobs)
 
     # areas = [cv2.contourArea(c) for c in contours]
     # max_index = np.argmax(areas)
     # cnt=contours[max_index]
-
     #cv2.drawContours(result, contours, -1, (255, 0, 0), 3)
 
     # Run Filter Heuristics
-    detection = Detection(blobs)
     heuristic_stack = OrderedDict()
     for heuristic in heuristics:
         heuristic_result = heuristic.run(detection, detector_state)
@@ -135,13 +132,33 @@ while(True):
 
     print heuristic_stack
 
-
+    # Distill heuristics into a detection
     # detection.chosen_blob = chosen
+    for blob in detection:
+        if 100 > blob.size > 8:
+            detection.chosen_blobs.append(blob)
 
-    # Update State
-    detector_state.update_detections(detection)
 
     # Check Failure Cases
+    for failure_case in failure_cases:
+        must_fail = failure_case.test(detection, detector_state)
+        if must_fail:
+            failure_case.print_failure()
+            # TODO: handle fixing case
+            break
+    else:
+        print "> Success!"
+        # Update State
+        detector_state.update_detections(detection)
+
+        for blob in detection:
+            if blob in detection.chosen_blobs:
+                cv.Circle(cv.fromarray(frame), (int(blob.x), int(blob.y)), blob.size, (0, 0, 255),
+                          thickness=2, lineType=8, shift=0)
+            else:
+                cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), blob.size, (0, 255, 0),
+                          thickness=1, lineType=8, shift=0)
+
 
     # Display the resulting frame
     cv2.imshow('original', frame)

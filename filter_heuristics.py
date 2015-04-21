@@ -57,6 +57,9 @@ class LargestHeuristic(Heuristic):
     """Largest blob gets a bonus"""
 
     def filter(self, detection, detector_state):
+        if len(detection) == 0:
+            return []
+
         index, largest_blob = max(enumerate(detection),
                                   key=lambda x: x[1].size)
         return [True if blob is largest_blob
