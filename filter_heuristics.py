@@ -1,5 +1,13 @@
+from instrumentation import Timed
 
-class Heuristic(object):
+
+class Heuristic(Timed):
+
+    def run(self, detection, detector_state):
+        self.start_timing()
+        mask = self.filter(detection, detector_state)
+        self.end_timing()
+        return mask
 
     def filter(self, detection, detector_state):
         """Takes a detection and returns a True / False mask that filters out
@@ -20,11 +28,13 @@ class AbnormalSizeHeuristic(Heuristic):
     """Filter blobs that are just too large or too small to be realistic."""
 
     def __init__(self, min_size=2, max_size=100):
+        super(AbnormalSizeHeuristic, self).__init__()
         self.min_size = min_size
         self.max_size = max_size
 
     def filter(self, detection, detector_state):
-        pass
+        return [self.min_size < blob.size < self.max_size
+                for blob in detection]
 
 
 class ImageDistanceHeuristic(Heuristic):

@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import cv2.cv as cv
+from collections import OrderedDict
 import math
 
 from detector_state import DetectorState
@@ -76,7 +77,7 @@ blob_params.filterByArea = True
 blob_params.minArea = 10
 blob_detector = cv2.SimpleBlobDetector(blob_params)
 
-cap = cap_file("./white_cylinder.wmv")
+cap = cap_file("./white_cylinder.mjpeg")
 
 heuristics = [
     AbnormalSizeHeuristic(),
@@ -126,9 +127,14 @@ while(True):
 
     # Run Filter Heuristics
     detection = Detection(blobs)
+    heuristic_stack = OrderedDict()
     for heuristic in heuristics:
-        #heuristic.run(detection, detector_state)
-        pass
+        heuristic_result = heuristic.run(detection, detector_state)
+        heuristic.print_time()
+        heuristic_stack[heuristic.__class__.__name__] = sum(heuristic_result)
+
+    print heuristic_stack
+
 
     # detection.chosen_blob = chosen
 
