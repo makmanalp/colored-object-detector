@@ -146,13 +146,18 @@ while(True):
         # Update State
         detector_state.update_detections(detection)
 
-        for blob in detection:
+    for blob in detection:
+        if not must_fail:
             if blob in detection.chosen_blobs:
                 cv.Circle(cv.fromarray(frame), (int(blob.x), int(blob.y)), int(math.ceil(blob.size)), (0, 0, 255),
                           thickness=2, lineType=8, shift=0)
             else:
                 cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), int(math.ceil(blob.size)), (0, 255, 0),
                           thickness=1, lineType=8, shift=0)
+        else:
+            cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), int(math.ceil(blob.size)), (0, 255, 0),
+                      thickness=1, lineType=8, shift=0)
+
 
 
     # Display the resulting frame
