@@ -27,6 +27,7 @@ class HeuristicStack(object):
 
         return heuristic_values
 
+
 class Heuristic(Timed):
 
     def run(self, detection, detector_state):
@@ -50,11 +51,11 @@ class PhysicalSizeHeuristic(Heuristic):
         pass
 
 
-class AbnormalSizeHeuristic(Heuristic):
+class NormalBlobSizeHeuristic(Heuristic):
     """Filter blobs that are just too large or too small to be realistic."""
 
-    def __init__(self, min_size=2, max_size=100):
-        super(AbnormalSizeHeuristic, self).__init__()
+    def __init__(self, min_size=6, max_size=100):
+        super(NormalBlobSizeHeuristic, self).__init__()
         self.min_size = min_size
         self.max_size = max_size
 

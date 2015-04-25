@@ -9,7 +9,7 @@ from detector_state import DetectorState
 from detection import Detection, Blob
 
 from failure_cases import (TooManyResultsFailure)
-from filter_heuristics import (AbnormalSizeHeuristic, LargestHeuristic,
+from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic,
                                HeuristicStack)
 
 """
@@ -83,7 +83,7 @@ blob_detector = cv2.SimpleBlobDetector(blob_params)
 cap = cap_file("./sun_shade_grass-cylinder.mjpeg")
 
 heuristics = HeuristicStack({
-    (AbnormalSizeHeuristic(), 1.0),
+    (NormalBlobSizeHeuristic(), 1.0),
     (LargestHeuristic(), 1.0)
 })
 
@@ -115,12 +115,10 @@ while(True):
     blobs = []
     for contour in contours:
         (x, y), size = cv2.minEnclosingCircle(contour)
-        blobs.append(Blob(x, y, int(math.ceil(size))))
+        area = cv2.contourArea(contour)
+        blobs.append(Blob(x, y, int(math.ceil(size)), area))
     detection = Detection(blobs)
 
-    # areas = [cv2.contourArea(c) for c in contours]
-    # max_index = np.argmax(areas)
-    # cnt=contours[max_index]
     #cv2.drawContours(result, contours, -1, (255, 0, 0), 3)
 
     # Run Filter Heuristics
@@ -137,7 +135,10 @@ while(True):
     for failure_case in failure_cases:
         must_fail = failure_case.test(detection, detector_state)
         if must_fail:
-            failure_case.print_failure()
+            failure_text = failure_case.get_failure_text()
+            print failure_text
+            cv2.putText(frame, failure_text, (10, 20),
+                        cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255))
             # TODO: handle fixing case
             break
     else:

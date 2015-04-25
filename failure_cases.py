@@ -4,8 +4,8 @@ class FailureCase(object):
     detection results, and possibly attempts to alleviate it by adjusting
     settings."""
 
-    def print_failure(self):
-        print "> Failure Case: {}".format(self.__class__.__name__)
+    def get_failure_text(self):
+        return "> Failure Case: {}".format(self.__class__.__name__)
 
     def test(self, detection, detector_state):
         raise NotImplementedError()
@@ -33,8 +33,8 @@ class TooManyResultsFailure(FailureCase):
         self.max_results = max_results
         self.failure = None
 
-    def print_failure(self):
-        print "> Failure Case: {} found too many results: {}.".format(self.__class__.__name__, self.num_results)
+    def get_failure_text(self):
+        return "> Failure Case: {} found too many results: {}.".format(self.__class__.__name__, self.num_results)
 
     def test(self, detection, detector_state):
         self.num_results = len(detection.chosen_blobs)
