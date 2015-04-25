@@ -1,5 +1,31 @@
 from instrumentation import Timed
+from collections import OrderedDict
 
+
+class HeuristicStack(object):
+
+    def __init__(self, heuristics):
+        self.heuristics = heuristics
+
+    def print_heuristic_result(self, heuristic, heuristic_result):
+        selected = sum(heuristic_result)
+        print "{name}: Selected: {selected} Filtered: {filtered}"\
+            .format(name=heuristic.__class__.__name__, selected=selected,
+                    filtered=len(heuristic_result) - selected)
+
+    def get_weighted_result(self, detection, detector_state):
+
+        heuristic_values = OrderedDict()
+        for heuristic, weight in self.heuristics:
+
+            heuristic_result = heuristic.run(detection, detector_state)
+            heuristic_name = heuristic.__class__.__name__
+            heuristic_values[heuristic_name] = [weight * 1.0 if x else 0.0 for x in heuristic_result]
+
+            heuristic.print_time()
+            self.print_heuristic_result(heuristic, heuristic_result)
+
+        return heuristic_values
 
 class Heuristic(Timed):
 

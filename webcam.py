@@ -3,14 +3,14 @@
 import numpy as np
 import cv2
 import cv2.cv as cv
-from collections import OrderedDict
 import math
 
 from detector_state import DetectorState
 from detection import Detection, Blob
 
 from failure_cases import (TooManyResultsFailure)
-from filter_heuristics import (AbnormalSizeHeuristic, LargestHeuristic)
+from filter_heuristics import (AbnormalSizeHeuristic, LargestHeuristic,
+                               HeuristicStack)
 
 """
 Ideas:
@@ -82,10 +82,10 @@ blob_detector = cv2.SimpleBlobDetector(blob_params)
 
 cap = cap_file("./sun_shade_grass-cylinder.mjpeg")
 
-heuristics = [
-    AbnormalSizeHeuristic(),
-    LargestHeuristic()
-]
+heuristics = HeuristicStack({
+    (AbnormalSizeHeuristic(), 1.0),
+    (LargestHeuristic(), 1.0)
+})
 
 failure_cases = [
     TooManyResultsFailure(max_results=4),
@@ -124,18 +124,12 @@ while(True):
     #cv2.drawContours(result, contours, -1, (255, 0, 0), 3)
 
     # Run Filter Heuristics
-    heuristic_stack = OrderedDict()
-    for heuristic in heuristics:
-        heuristic_result = heuristic.run(detection, detector_state)
-        heuristic.print_time()
-        heuristic_stack[heuristic.__class__.__name__] = sum(heuristic_result)
-
-    print heuristic_stack
+    heuristics.get_weighted_result(detection, detector_state)
 
     # Distill heuristics into a detection
     # detection.chosen_blob = chosen
     for blob in detection:
-        if 100 > blob.size > 8:
+        if 100 > blob.size > 6:
             detection.chosen_blobs.append(blob)
 
 
@@ -168,6 +162,8 @@ while(True):
     k = cv2.waitKey(1) & 0xFF
     if k == 27:
         break
+    if k == 32:
+        k = cv2.waitKey() & 0xFF
 
 # When everything done, release the capture
 cap.release()
