@@ -72,6 +72,18 @@ class ImageDistanceHeuristic(Heuristic):
         pass
 
 
+class MostDifferentColorHeuristic(Heuristic):
+    """
+    Sort by color intensity maybe?
+
+    - Historical average of hsv colors in detected blobs
+    - Closest to target HSV value
+    """
+
+    def filter(self, detection, detector_state):
+        pass
+
+
 class TrackingHeuristic(Heuristic):
     """Run CamShift on the tracked image and detect variance from result
     TODO"""
