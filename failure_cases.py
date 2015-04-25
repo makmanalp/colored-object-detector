@@ -29,7 +29,7 @@ class TooManyNonFilteredFailure(FailureCase):
 class TooManyResultsFailure(FailureCase):
     """You'd expect only one positive result. """
 
-    def __init__(self, max_results=4):
+    def __init__(self, max_results=10):
         self.max_results = max_results
         self.failure = None
 

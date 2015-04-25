@@ -116,7 +116,7 @@ while(True):
     for contour in contours:
         (x, y), size = cv2.minEnclosingCircle(contour)
         area = cv2.contourArea(contour)
-        blobs.append(Blob(x, y, int(math.ceil(size)), area))
+        blobs.append(Blob(x, y, size, area))
     detection = Detection(blobs)
 
     #cv2.drawContours(result, contours, -1, (255, 0, 0), 3)
@@ -148,10 +148,10 @@ while(True):
 
         for blob in detection:
             if blob in detection.chosen_blobs:
-                cv.Circle(cv.fromarray(frame), (int(blob.x), int(blob.y)), blob.size, (0, 0, 255),
+                cv.Circle(cv.fromarray(frame), (int(blob.x), int(blob.y)), int(math.ceil(blob.size)), (0, 0, 255),
                           thickness=2, lineType=8, shift=0)
             else:
-                cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), blob.size, (0, 255, 0),
+                cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), int(math.ceil(blob.size)), (0, 255, 0),
                           thickness=1, lineType=8, shift=0)
 
 
