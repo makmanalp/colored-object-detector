@@ -169,7 +169,8 @@ while(True):
     if k == 27:
         break
     if k == 32:
-        k = cv2.waitKey() & 0xFF
+        # pause
+        cv2.waitKey() & 0xFF
 
 # When everything done, release the capture
 cap.release()
