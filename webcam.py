@@ -84,7 +84,7 @@ cap = cap_file("./sun_shade_grass-cylinder.mjpeg")
 
 heuristics = HeuristicStack({
     (NormalBlobSizeHeuristic(), 1.0),
-    (LargestHeuristic(), 1.0)
+    (LargestHeuristic(), 0.5)
 })
 
 failure_cases = [
@@ -122,12 +122,12 @@ while(True):
     #cv2.drawContours(result, contours, -1, (255, 0, 0), 3)
 
     # Run Filter Heuristics
-    heuristics.get_weighted_result(detection, detector_state)
+    heuristic_total = heuristics.get_weighted_result(detection, detector_state)
 
     # Distill heuristics into a detection
     # detection.chosen_blob = chosen
-    for blob in detection:
-        if 100 > blob.size > 6:
+    for heuristic_weight, blob in zip(heuristic_total, detection):
+        if heuristic_weight >= 1.5:
             detection.chosen_blobs.append(blob)
 
 

@@ -25,7 +25,9 @@ class HeuristicStack(object):
             heuristic.print_time()
             self.print_heuristic_result(heuristic, heuristic_result)
 
-        return heuristic_values
+        heuristic_total = map(sum, zip(*heuristic_values.values()))
+
+        return heuristic_total
 
 
 class Heuristic(Timed):
@@ -54,7 +56,7 @@ class PhysicalSizeHeuristic(Heuristic):
 class NormalBlobSizeHeuristic(Heuristic):
     """Filter blobs that are just too large or too small to be realistic."""
 
-    def __init__(self, min_size=6, max_size=100):
+    def __init__(self, min_size=6, max_size=400):
         super(NormalBlobSizeHeuristic, self).__init__()
         self.min_size = min_size
         self.max_size = max_size
