@@ -1,5 +1,6 @@
 # TODO: show graphs of heuristic stack etc
 
+import argparse
 import numpy as np
 import cv2
 import cv2.cv as cv
@@ -9,7 +10,7 @@ from detector_state import DetectorState
 from detection import Detection, Blob
 
 from failure_cases import (TooManyResultsFailure)
-from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic,
+from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic, PhysicalSizeHeuristic,
                                HeuristicStack)
 
 """
@@ -18,26 +19,44 @@ Ideas:
     - Camshift: http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_video/py_meanshift/py_meanshift.html#meanshift
 
 Heuristics:
-    - Return largest - there is only one dot
     - Maybe do blob detection before-after
 
 """
 
 
-detector_state = DetectorState((640, 480), 128, 5)
-
-
-def cap_camera(state):
-    cap = cv2.VideoCapture(1)
-    cap.set(cv2.cv.cv_cap_prop_frame_width, state.resolution[0])
-    cap.set(cv2.cv.cv_cap_prop_frame_height, state.resolution[1])
-    cap.set(cv2.cv.cv_cap_prop_fps, state.resolution.fps)
+def cap_camera(cam_id):
+    cap = cv2.VideoCapture(cam_id)
+    try:
+        cap.set(cv2.cv.cv_cap_prop_frame_width, 640)
+        cap.set(cv2.cv.cv_cap_prop_frame_height, 480)
+        cap.set(cv2.cv.cv_cap_prop_fps, 5)
+    except AttributeError:
+        print "Could not set resolution / fps attributes, continuing ..."
     return cap
 
 
 def cap_file(file_name):
     cap = cv2.VideoCapture(file_name)
     return cap
+
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('--file', dest='file',
+                    help='Get video from a file path.')
+parser.add_argument('--cam', dest='cam',
+                    help='Get video from a camera id (numeric).')
+args = parser.parse_args()
+
+if args.cam:
+    cap = cap_camera(int(args.cam))
+elif args.file:
+    cap = cap_file(args.file)
+else:
+    raise ValueError("Must specify either --cam or --file!")
+
+
+detector_state = DetectorState((640, 480), 128, 5)
+
+
 
 
 def make_modifier(index, lower_or_upper):
@@ -86,11 +105,9 @@ blob_params.filterByArea = True
 blob_params.minArea = 10
 blob_detector = cv2.SimpleBlobDetector(blob_params)
 
-cap = cap_file("./sun_shade_grass-cylinder.mjpeg")
-
 heuristics = HeuristicStack({
-    (NormalBlobSizeHeuristic(), 1.0),
-    (LargestHeuristic(), 0.5)
+    (PhysicalSizeHeuristic(debug=True), 1.0),
+    (LargestHeuristic(debug=True), 0.5)
 })
 
 failure_cases = [
@@ -152,18 +169,14 @@ while(True):
         # Update State
         detector_state.update_detections(detection)
 
-    for blob in detection:
-        if not must_fail:
+    if not must_fail:
+        for blob in detection:
             if blob in detection.chosen_blobs:
-                cv.Circle(cv.fromarray(frame), (int(blob.x), int(blob.y)), int(math.ceil(blob.size)), (0, 0, 255),
+                cv.Circle(cv.fromarray(frame),
+                          (int(blob.x), int(blob.y)),
+                          int(math.ceil(blob.size)),
+                          (0, 0, 255),
                           thickness=2, lineType=8, shift=0)
-            else:
-                cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), int(math.ceil(blob.size)), (0, 255, 0),
-                          thickness=1, lineType=8, shift=0)
-        else:
-            cv.Circle(cv.fromarray(result), (int(blob.x), int(blob.y)), int(math.ceil(blob.size)), (0, 255, 0),
-                      thickness=1, lineType=8, shift=0)
-
 
 
     # Display the resulting frame

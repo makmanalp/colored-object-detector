@@ -1,11 +1,32 @@
 from instrumentation import Timed
 from collections import OrderedDict
+import math
+
+import cv2.cv as cv
+
+COLORS = [
+    (31,120,180),
+    (166,206,227),
+    (178,223,138),
+    (51,160,44),
+    (251,154,153),
+    (227,26,28),
+    (253,191,111),
+    (255,127,0),
+    (202,178,214),
+    (106,61,154),
+    (255,255,153),
+    (177,89,40),
+]
 
 
 class HeuristicStack(object):
 
     def __init__(self, heuristics):
         self.heuristics = heuristics
+        for i, (heuristic, weight) in enumerate(self.heuristics):
+            heuristic.stack = self
+            heuristic.color = COLORS[i]
 
     def print_heuristic_result(self, heuristic, heuristic_result):
         selected = sum(heuristic_result)
@@ -32,9 +53,20 @@ class HeuristicStack(object):
 
 class Heuristic(Timed):
 
+    def __init__(self, *args, **kwargs):
+        super(Heuristic, self).__init__()
+        self.debug = kwargs.get("debug", False)
+
     def run(self, detection, detector_state):
         self.start_timing()
         mask = self.filter(detection, detector_state)
+        if self.debug:
+            for blob, selected in zip(detection.blobs, mask):
+                if selected:
+                    cv.Circle(cv.fromarray(detector_state.current_image),
+                              (int(blob.x), int(blob.y)),
+                              int(math.ceil(blob.size)), self.color,
+                              thickness=2, lineType=8, shift=0)
         self.end_timing()
         return mask
 
@@ -45,19 +77,31 @@ class Heuristic(Timed):
 
 
 class PhysicalSizeHeuristic(Heuristic):
-    """From camera angle, and using the flat ground assumption, calculate
-    approximate distance of a blob and filter those above the size threshold
-    for their distance."""
+    """From camera angle (degrees, angles from downward vector), and using the
+    flat ground assumption, calculate approximate distance of a blob and filter
+    those above the size threshold for their distance."""
+
+    def __init__(self, min_size=5, max_size=20, camera_angle=60.0,
+                 camera_height=100.0, **kwargs):
+        super(PhysicalSizeHeuristic, self).__init__(**kwargs)
+        self.min_size = min_size
+        self.max_size = max_size
+        self.camera_angle = math.radians(camera_angle)
+        self.camera_height = camera_height
 
     def filter(self, detection, detector_state):
-        pass
+        image_height = detector_state.current_image.shape[0]
+
+        return [self.min_size
+                < ((float(image_height) / blob.y) * blob.area)
+                < self.max_size for blob in detection]
 
 
 class NormalBlobSizeHeuristic(Heuristic):
     """Filter blobs that are just too large or too small to be realistic."""
 
-    def __init__(self, min_size=6, max_size=400):
-        super(NormalBlobSizeHeuristic, self).__init__()
+    def __init__(self, min_size=6, max_size=400, **kwargs):
+        super(NormalBlobSizeHeuristic, self).__init__(**kwargs)
         self.min_size = min_size
         self.max_size = max_size
 
