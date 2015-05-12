@@ -23,14 +23,14 @@ Heuristics:
 
 """
 
-
 def cap_camera(cam_id):
     cap = cv2.VideoCapture(cam_id)
     try:
-        cap.set(cv2.cv.cv_cap_prop_frame_width, 640)
-        cap.set(cv2.cv.cv_cap_prop_frame_height, 480)
-        cap.set(cv2.cv.cv_cap_prop_fps, 5)
-    except AttributeError:
+        cap.set(cv.CV_CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv.CV_CAP_PROP_FPS, 5)
+    except AttributeError as ex:
+        print ex
         print "Could not set resolution / fps attributes, continuing ..."
     return cap
 
@@ -153,6 +153,7 @@ while(True):
         if heuristic_weight >= 1.5:
             detection.chosen_blobs.append(blob)
 
+    print len(detection.chosen_blobs)
 
     # Check Failure Cases
     for failure_case in failure_cases:

@@ -3,6 +3,7 @@ from collections import OrderedDict
 import math
 
 import cv2.cv as cv
+import cv2
 
 COLORS = [
     (31,120,180),
@@ -81,19 +82,32 @@ class PhysicalSizeHeuristic(Heuristic):
     flat ground assumption, calculate approximate distance of a blob and filter
     those above the size threshold for their distance."""
 
-    def __init__(self, min_size=5, max_size=20, camera_angle=60.0,
-                 camera_height=100.0, **kwargs):
+    def __init__(self, min_size=25, max_size=250, camera_angle=60.0,
+                 camera_height=100.0, camera_vertical_fov=43.30, **kwargs):
         super(PhysicalSizeHeuristic, self).__init__(**kwargs)
         self.min_size = min_size
         self.max_size = max_size
-        self.camera_angle = math.radians(camera_angle)
+        self.camera_angle = camera_angle
         self.camera_height = camera_height
+        self.camera_vertical_fov = camera_vertical_fov
+
+    def find_blob_distance(self, pixel_y, image_height):
+        pixel_resolution = self.camera_vertical_fov / float(image_height)
+        image_center = image_height / 2.0
+        pixel_angle = (image_center - pixel_y) * pixel_resolution
+        theta_pixel = self.camera_angle + pixel_angle
+        return self.camera_height * math.tan(math.radians(theta_pixel))
 
     def filter(self, detection, detector_state):
+        #return [self.min_size < blob.area < self.max_size for blob in detection]
         image_height = detector_state.current_image.shape[0]
 
+        distance_vector = [self.find_blob_distance(blob.y, image_height) for blob in detection]
+        print distance_vector
+        #cv2.putText(detector_state.current_image, thing, (10, 20),
+        #            cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255))
         return [self.min_size
-                < ((float(image_height) / blob.y) * blob.area)
+                < (self.find_blob_distance(blob.y, image_height) * blob.area)
                 < self.max_size for blob in detection]
 
 
