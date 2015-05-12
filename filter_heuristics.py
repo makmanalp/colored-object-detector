@@ -6,8 +6,6 @@ import cv2.cv as cv
 import cv2
 
 COLORS = [
-    (31,120,180),
-    (166,206,227),
     (178,223,138),
     (51,160,44),
     (251,154,153),
@@ -17,20 +15,24 @@ COLORS = [
     (202,178,214),
     (106,61,154),
     (255,255,153),
+    (31,120,180),
+    (166,206,227),
     (177,89,40),
 ]
 
 
 class HeuristicStack(object):
 
-    def __init__(self, heuristics):
+    def __init__(self, heuristics, threshold=1.0):
         self.heuristics = heuristics
+        self.threshold = threshold
         for i, (heuristic, weight) in enumerate(self.heuristics):
             heuristic.stack = self
             heuristic.color = COLORS[i]
+            heuristic.threshold = threshold
 
     def print_heuristic_result(self, heuristic, heuristic_result):
-        selected = sum(heuristic_result)
+        selected = sum(1 for x in heuristic_result if x >= 1.0)
         print "{name}: Selected: {selected} Filtered: {filtered}"\
             .format(name=heuristic.__class__.__name__, selected=selected,
                     filtered=len(heuristic_result) - selected)
@@ -42,7 +44,7 @@ class HeuristicStack(object):
 
             heuristic_result = heuristic.run(detection, detector_state)
             heuristic_name = heuristic.__class__.__name__
-            heuristic_values[heuristic_name] = [weight * 1.0 if x else 0.0 for x in heuristic_result]
+            heuristic_values[heuristic_name] = [weight * x for x in heuristic_result]
 
             heuristic.print_time()
             self.print_heuristic_result(heuristic, heuristic_result)
@@ -62,13 +64,20 @@ class Heuristic(Timed):
         self.start_timing()
         mask = self.filter(detection, detector_state)
         if self.debug:
-            for blob, selected in zip(detection.blobs, mask):
-                if selected:
+            for blob, weight in zip(detection.blobs, mask):
+                if weight >= 1.0:
                     cv.Circle(cv.fromarray(detector_state.current_image),
                               (int(blob.x), int(blob.y)),
-                              int(math.ceil(blob.size)), self.color,
-                              thickness=2, lineType=8, shift=0)
+                              int(math.ceil(blob.size)), (0, 255, 0),
+                              thickness=1, lineType=8, shift=0)
+                else:
+                    cv.Rectangle(cv.fromarray(detector_state.current_image),
+                              (int(blob.x - blob.size), int(blob.y - blob.size)),
+                              (int(blob.x + blob.size), int(blob.y + blob.size)),
+                              (0, 0, 255),
+                              thickness=1, lineType=8, shift=0)
         self.end_timing()
+        print mask
         return mask
 
     def filter(self, detection, detector_state):
@@ -101,14 +110,11 @@ class PhysicalSizeHeuristic(Heuristic):
     def filter(self, detection, detector_state):
         #return [self.min_size < blob.area < self.max_size for blob in detection]
         image_height = detector_state.current_image.shape[0]
+        distance_vector = [self.find_blob_distance(blob.y, image_height)
+                           for blob in detection]
 
-        distance_vector = [self.find_blob_distance(blob.y, image_height) for blob in detection]
-        print distance_vector
-        #cv2.putText(detector_state.current_image, thing, (10, 20),
-        #            cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255))
-        return [self.min_size
-                < (self.find_blob_distance(blob.y, image_height) * blob.area)
-                < self.max_size for blob in detection]
+        return [1.0 if self.min_size < x < self.max_size else 0.0
+                for x in distance_vector]
 
 
 class NormalBlobSizeHeuristic(Heuristic):
@@ -161,6 +167,6 @@ class LargestHeuristic(Heuristic):
 
         index, largest_blob = max(enumerate(detection),
                                   key=lambda x: x[1].area)
-        return [True if blob is largest_blob
-                else False
+        return [1.0 if blob is largest_blob
+                else 0.0
                 for blob in detection]

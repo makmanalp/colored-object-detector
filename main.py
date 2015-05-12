@@ -106,7 +106,7 @@ blob_params.minArea = 10
 blob_detector = cv2.SimpleBlobDetector(blob_params)
 
 heuristics = HeuristicStack({
-    (PhysicalSizeHeuristic(debug=True), 1.0),
+    (PhysicalSizeHeuristic(debug=False), 1.0),
     (LargestHeuristic(debug=True), 0.5)
 })
 
@@ -152,8 +152,6 @@ while(True):
     for heuristic_weight, blob in zip(heuristic_total, detection):
         if heuristic_weight >= 1.5:
             detection.chosen_blobs.append(blob)
-
-    print len(detection.chosen_blobs)
 
     # Check Failure Cases
     for failure_case in failure_cases:
