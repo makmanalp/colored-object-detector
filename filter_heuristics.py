@@ -72,10 +72,13 @@ class Heuristic(Timed):
                               thickness=1, lineType=8, shift=0)
                 else:
                     cv.Rectangle(cv.fromarray(detector_state.current_image),
-                              (int(blob.x - blob.size), int(blob.y - blob.size)),
-                              (int(blob.x + blob.size), int(blob.y + blob.size)),
-                              (0, 0, 255),
-                              thickness=1, lineType=8, shift=0)
+                                 (int(blob.x - blob.size), int(blob.y - blob.size)),
+                                 (int(blob.x + blob.size), int(blob.y + blob.size)),
+                                 (0, 0, 255),
+                                 thickness=1, lineType=8, shift=0)
+
+                cv2.putText(detector_state.current_image, str(weight), (int(blob.x), int(blob.y)),
+                            cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255))
         self.end_timing()
         return mask
 
