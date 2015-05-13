@@ -106,8 +106,8 @@ blob_params.minArea = 10
 blob_detector = cv2.SimpleBlobDetector(blob_params)
 
 heuristics = HeuristicStack({
-    (PhysicalSizeHeuristic(debug=False), 1.0),
-    (LargestHeuristic(debug=True), 0.5)
+    (PhysicalSizeHeuristic(debug=True), 1.0),
+    (LargestHeuristic(debug=False), 0.5)
 })
 
 failure_cases = [
@@ -141,8 +141,6 @@ while(True):
         area = cv2.contourArea(contour)
         blobs.append(Blob(x, y, size, area))
     detection = Detection(blobs)
-
-    #cv2.drawContours(result, contours, -1, (255, 0, 0), 3)
 
     # Run Filter Heuristics
     heuristic_total = heuristics.get_weighted_result(detection, detector_state)

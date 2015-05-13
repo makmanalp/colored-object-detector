@@ -77,7 +77,6 @@ class Heuristic(Timed):
                               (0, 0, 255),
                               thickness=1, lineType=8, shift=0)
         self.end_timing()
-        print mask
         return mask
 
     def filter(self, detection, detector_state):
@@ -91,7 +90,7 @@ class PhysicalSizeHeuristic(Heuristic):
     flat ground assumption, calculate approximate distance of a blob and filter
     those above the size threshold for their distance."""
 
-    def __init__(self, min_size=25, max_size=250, camera_angle=60.0,
+    def __init__(self, min_size=25, max_size=250, camera_angle=45.0,
                  camera_height=100.0, camera_vertical_fov=43.30, **kwargs):
         super(PhysicalSizeHeuristic, self).__init__(**kwargs)
         self.min_size = min_size
