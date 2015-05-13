@@ -128,7 +128,7 @@ class NormalBlobSizeHeuristic(Heuristic):
         self.max_size = max_size
 
     def filter(self, detection, detector_state):
-        return [self.min_size < blob.area < self.max_size
+        return [1.0 if self.min_size < blob.area < self.max_size else 0.0
                 for blob in detection]
 
 
