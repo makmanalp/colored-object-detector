@@ -108,19 +108,26 @@ blob_detector = cv2.SimpleBlobDetector(blob_params)
 heuristics = HeuristicStack({
     (PhysicalSizeHeuristic(debug=False), 1.0),
     (LargestHeuristic(debug=False), 0.5),
-    (NormalBlobSizeHeuristic(debug=True, min_size=1, max_size=400), 0.5)
+    (NormalBlobSizeHeuristic(debug=False, min_size=1, max_size=400), 0.5)
 })
 
 failure_cases = [
     TooManyResultsFailure(max_results=4),
 ]
 
+paused = False
+_, saved_frame = cap.read()
 while(True):
 
     # Get a frame
-    ret, frame = cap.read()
-    if frame is None:
-        break
+    if not paused:
+        _, frame = cap.read()
+        if frame is None and args.file:
+            cap = cap_file(args.file)
+            _, frame = cap.read()
+        saved_frame = frame.copy()
+    else:
+        frame = saved_frame.copy()
 
     # Threshold it
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -186,8 +193,7 @@ while(True):
     if k == 27:
         break
     if k == 32:
-        # pause
-        cv2.waitKey() & 0xFF
+        paused = not paused
 
 # When everything done, release the capture
 cap.release()
