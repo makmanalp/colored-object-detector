@@ -180,6 +180,15 @@ class MostDifferentColorHeuristic(Heuristic):
         pass
 
 
+class DensityHeuristic(Heuristic):
+    """Distinguish between solid filled blobs versus blobs that are composed
+    mostly of speckle. Solid is better. Ratio of non-zero pixels in area to
+    radius."""
+
+    def filter(self, detection, detector_state):
+        pass
+
+
 class TrackingHeuristic(Heuristic):
     """Run CamShift on the tracked image and detect variance from result
     TODO"""
