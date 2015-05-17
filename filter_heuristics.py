@@ -77,7 +77,7 @@ class Heuristic(Timed):
                                  (0, 0, 255),
                                  thickness=1, lineType=8, shift=0)
 
-                cv2.putText(detector_state.current_image, str(weight), (int(blob.x), int(blob.y)),
+                cv2.putText(detector_state.current_image, "{0:.4f}".format(weight), (int(blob.x), int(blob.y)),
                             cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255))
         self.end_timing()
         return mask
@@ -93,14 +93,16 @@ class PhysicalSizeHeuristic(Heuristic):
     flat ground assumption, calculate approximate distance of a blob and filter
     those above the size threshold for their distance."""
 
-    def __init__(self, min_size=25, max_size=250, camera_angle=45.0,
-                 camera_height=100.0, camera_vertical_fov=43.30, **kwargs):
+    def __init__(self, min_size=4.0, max_size=16.0, camera_angle=68.0,
+                 camera_height=70.0, camera_vertical_fov=43.30,
+                 object_size=15.0, **kwargs):
         super(PhysicalSizeHeuristic, self).__init__(**kwargs)
         self.min_size = min_size
         self.max_size = max_size
         self.camera_angle = camera_angle
         self.camera_height = camera_height
         self.camera_vertical_fov = camera_vertical_fov
+        self.object_size = object_size
 
     def find_blob_distance(self, pixel_y, image_height):
         pixel_resolution = self.camera_vertical_fov / float(image_height)
@@ -109,14 +111,16 @@ class PhysicalSizeHeuristic(Heuristic):
         theta_pixel = self.camera_angle + pixel_angle
         return self.camera_height * math.tan(math.radians(theta_pixel))
 
-    def filter(self, detection, detector_state):
-        #return [self.min_size < blob.area < self.max_size for blob in detection]
-        image_height = detector_state.current_image.shape[0]
-        distance_vector = [self.find_blob_distance(blob.y, image_height)
-                           for blob in detection]
+    def focal_length(self, y):
+        return y / (2.0 * math.tan(math.radians(self.camera_vertical_fov / 2.0)))
 
+    def filter(self, detection, detector_state):
+        image_height = detector_state.current_image.shape[0]
+        focal_length = self.focal_length(image_height)
+        size_vector = [(blob.size * self.find_blob_distance(blob.y, image_height)) / focal_length
+                       for blob in detection]
         return [1.0 if self.min_size < x < self.max_size else 0.0
-                for x in distance_vector]
+                for x in size_vector]
 
 
 class NormalBlobSizeHeuristic(Heuristic):
