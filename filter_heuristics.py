@@ -30,6 +30,26 @@ class HeuristicStack(object):
             heuristic.stack = self
             heuristic.color = COLORS[i]
             heuristic.threshold = threshold
+        self.display_window()
+
+    def display_window(self):
+        cv.NamedWindow("heuristics")
+        cv.MoveWindow("heuristics", 20, 20)
+        cv.ResizeWindow("heuristics", 640, 480)
+        for heuristic, _ in self.heuristics:
+            name = heuristic.__class__.__name__
+            cv.CreateTrackbar(name, "heuristics", 0, 1, self.make_set_debug(heuristic))
+            cv.CreateTrackbar("weights_" + name, "heuristics", 0, 1, self.make_set_weights(heuristic))
+
+    def make_set_debug(self, heuristic):
+        def set_debug(value):
+            heuristic.debug = (True if value == 1 else False)
+        return set_debug
+
+    def make_set_weights(self, heuristic):
+        def set_weights(value):
+            heuristic.debug_print_weights = (True if value == 1 else False)
+        return set_weights
 
     def print_heuristic_result(self, heuristic, heuristic_result):
         selected = sum(1 for x in heuristic_result if x >= 1.0)
@@ -59,6 +79,7 @@ class Heuristic(Timed):
     def __init__(self, *args, **kwargs):
         super(Heuristic, self).__init__()
         self.debug = kwargs.get("debug", False)
+        self.debug_print_weights = self.debug
 
     def run(self, detection, detector_state):
         self.start_timing()
@@ -77,8 +98,11 @@ class Heuristic(Timed):
                                  (0, 0, 255),
                                  thickness=1, lineType=8, shift=0)
 
-                cv2.putText(detector_state.current_image, "{0:.4f}".format(weight), (int(blob.x), int(blob.y)),
-                            cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255))
+                if self.debug_print_weights:
+                    cv2.putText(detector_state.current_image,
+                                "{0:.2f}".format(weight), (int(blob.x),
+                                                           int(blob.y)),
+                                cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255))
         self.end_timing()
         return mask
 
@@ -126,7 +150,7 @@ class PhysicalSizeHeuristic(Heuristic):
 class NormalBlobSizeHeuristic(Heuristic):
     """Filter blobs that are just too large or too small to be realistic."""
 
-    def __init__(self, min_size=6, max_size=400, **kwargs):
+    def __init__(self, min_size=16, max_size=400, **kwargs):
         super(NormalBlobSizeHeuristic, self).__init__(**kwargs)
         self.min_size = min_size
         self.max_size = max_size
