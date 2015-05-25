@@ -68,7 +68,7 @@ def make_modifier(index, lower_or_upper):
     return inner
 
 
-cv.NamedWindow("image")
+cv.NamedWindow("image", flags=cv.CV_WINDOW_NORMAL)
 cv.MoveWindow("image", 20, 20)
 cv.ResizeWindow("image", 640, 480)
 cv.CreateTrackbar("h_low", "image", 0, 255, make_modifier(0, True))
@@ -78,7 +78,7 @@ cv.CreateTrackbar("s_high", "image", 157, 255, make_modifier(1, False))
 cv.CreateTrackbar("v_low", "image", 152, 255, make_modifier(2, True))
 cv.CreateTrackbar("v_high", "image", 255, 255, make_modifier(2, False))
 
-cv.NamedWindow("original")
+cv.NamedWindow("original", flags=cv.CV_WINDOW_NORMAL)
 cv.MoveWindow("original", 650, 20)
 cv.ResizeWindow("original", 640, 480)
 
