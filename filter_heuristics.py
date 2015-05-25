@@ -5,7 +5,6 @@ import math
 import cv2.cv as cv
 import cv2
 
-import pandas as pd
 import matplotlib.pyplot as plt
 plt.ion()
 
@@ -170,14 +169,26 @@ class PhysicalSizeHeuristic(Heuristic):
 class NormalBlobSizeHeuristic(Heuristic):
     """Filter blobs that are just too large or too small to be realistic."""
 
-    def __init__(self, min_size=16, max_size=400, **kwargs):
+    def __init__(self, min_size=6, max_size=40, **kwargs):
         super(NormalBlobSizeHeuristic, self).__init__(**kwargs)
         self.min_size = min_size
         self.max_size = max_size
 
     def filter(self, detection, detector_state):
-        return [1.0 if self.min_size < blob.size < self.max_size else 0.0
-                for blob in detection]
+
+        def highpass_filter(x):
+            if self.min_size <= x <= self.max_size:
+                return 1.0
+            elif x < self.min_size:
+                return 0.0
+            elif x > self.max_size:
+                # Penalize larger blobs inversely proportionally to how large
+                # they are compared to the upper limit
+                return self.max_size / x
+            else:
+                raise ValueError(x)
+
+        return [highpass_filter(blob.size) for blob in detection]
 
 
 class ImageDistanceHeuristic(Heuristic):
