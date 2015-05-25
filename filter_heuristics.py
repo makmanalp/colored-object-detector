@@ -5,6 +5,10 @@ import math
 import cv2.cv as cv
 import cv2
 
+import pandas as pd
+import matplotlib.pyplot as plt
+plt.ion()
+
 COLORS = [
     (178,223,138),
     (51,160,44),
@@ -127,6 +131,9 @@ class PhysicalSizeHeuristic(Heuristic):
         self.camera_height = camera_height
         self.camera_vertical_fov = camera_vertical_fov
         self.object_size = object_size
+        # self.fig = plt.figure()
+        # self.ax = self.fig.add_subplot(111)
+
 
     def find_blob_distance(self, pixel_y, image_height):
         pixel_resolution = self.camera_vertical_fov / float(image_height)
@@ -143,6 +150,12 @@ class PhysicalSizeHeuristic(Heuristic):
         focal_length = self.focal_length(image_height)
         size_vector = [(blob.size * self.find_blob_distance(blob.y, image_height)) / focal_length
                        for blob in detection]
+        # self.ax.clear()
+        # if self.debug:
+        #     pd.DataFrame(size_vector).plot(kind="hist", ax=self.ax,
+        #                                    xlim=(0, 70),
+        #                                    ylim=(0, 80),
+        #                                    bins=100)
         return [1.0 if self.min_size < x < self.max_size else 0.0
                 for x in size_vector]
 
