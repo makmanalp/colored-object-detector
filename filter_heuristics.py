@@ -209,3 +209,4 @@ class LargestHeuristic(Heuristic):
         return [1.0 if blob is largest_blob
                 else 0.0
                 for blob in detection]
+# cam: v4l2-ctl -d /dev/video1 -c exposure_auto=1,focus_auto=0,white_balance_temperature_auto=0,brightness=128,contrast=128,saturation=128,focus_absolute=0
