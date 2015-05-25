@@ -27,13 +27,20 @@ COLORS = [
 
 class HeuristicStack(object):
 
-    def __init__(self, heuristics, threshold=1.0):
+    def __init__(self, heuristics, threshold=None):
         self.heuristics = heuristics
-        self.threshold = threshold
+
+        total_weight = 0.0
         for i, (heuristic, weight) in enumerate(self.heuristics):
             heuristic.stack = self
             heuristic.color = COLORS[i]
-            heuristic.threshold = threshold
+            total_weight += weight
+
+        if threshold is None:
+            self.threshold = total_weight
+        else:
+            self.threshold = threshold
+
         self.display_window()
 
     def display_window(self):

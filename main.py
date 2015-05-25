@@ -156,7 +156,7 @@ while(True):
     # Distill heuristics into a detection
     # detection.chosen_blob = chosen
     for heuristic_weight, blob in zip(heuristic_total, detection):
-        if heuristic_weight >= 2.0:
+        if heuristic_weight >= heuristics.threshold:
             detection.chosen_blobs.append(blob)
 
     # Check Failure Cases
