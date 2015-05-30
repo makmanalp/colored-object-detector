@@ -157,7 +157,6 @@ while(True):
         real_x, real_y = detector_state.find_blob_distance(x, y)
         real_size = detector_state.find_blob_size(size, real_y)
         blobs.append(Blob(x, y, size, area, real_x, real_y, real_size))
-        print real_x, real_y
     detection = Detection(blobs)
 
     # Run Filter Heuristics
@@ -181,15 +180,6 @@ while(True):
             break
     else:
         print "> Success!"
-        # Select smallest blob
-        current_detection = detector_state.last_detection
-        if current_detection:
-            print "Sent"
-            smallest_blob = min(current_detection, key=lambda x: x.real_y)
-            msg = [{"name": "sample!", "x": smallest_blob.real_x, "y":
-                    smallest_blob.real_y}]
-            print msg
-            publisher.send(json.dumps(msg))
         # Update State
         detector_state.update_detections(detection)
 
@@ -201,6 +191,15 @@ while(True):
                           int(math.ceil(blob.size)),
                           (0, 0, 255),
                           thickness=2, lineType=8, shift=0)
+
+                # Select smallest blob
+                # TODO: make sure we send only ONE chosen blob
+                #smallest_blob = min(detection, key=lambda x: x.real_y)
+                #print list(current_detection)
+                print blob
+                msg = [{"name": "sample!", "x": blob.real_y, "y":
+                        -blob.real_x}]
+                publisher.send(json.dumps(msg))
 
 
     # Display the resulting frame
