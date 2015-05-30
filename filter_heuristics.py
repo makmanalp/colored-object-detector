@@ -140,22 +140,8 @@ class PhysicalSizeHeuristic(Heuristic):
         # self.fig = plt.figure()
         # self.ax = self.fig.add_subplot(111)
 
-
-    def find_blob_distance(self, pixel_y, image_height):
-        pixel_resolution = self.camera_vertical_fov / float(image_height)
-        image_center = image_height / 2.0
-        pixel_angle = (image_center - pixel_y) * pixel_resolution
-        theta_pixel = self.camera_angle + pixel_angle
-        return self.camera_height * math.tan(math.radians(theta_pixel))
-
-    def focal_length(self, y):
-        return y / (2.0 * math.tan(math.radians(self.camera_vertical_fov / 2.0)))
-
     def filter(self, detection, detector_state):
-        image_height = detector_state.current_image.shape[0]
-        focal_length = self.focal_length(image_height)
-        size_vector = [(blob.size * self.find_blob_distance(blob.y, image_height)) / focal_length
-                       for blob in detection]
+        size_vector = [blob.real_size for blob in detection]
         # self.ax.clear()
         # if self.debug:
         #     pd.DataFrame(size_vector).plot(kind="hist", ax=self.ax,

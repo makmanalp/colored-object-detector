@@ -54,7 +54,7 @@ else:
     raise ValueError("Must specify either --cam or --file!")
 
 
-detector_state = DetectorState((640, 480), 128, 5)
+detector_state = DetectorState((640, 480), 128, 5, approx_object_size=15.0)
 
 
 
@@ -147,7 +147,9 @@ while(True):
     for contour in contours:
         (x, y), size = cv2.minEnclosingCircle(contour)
         area = cv2.contourArea(contour)
-        blobs.append(Blob(x, y, size, area))
+        real_y = detector_state.find_blob_distance(y)
+        real_size = detector_state.find_blob_size(size, real_y)
+        blobs.append(Blob(x, y, size, area, -1, real_y, real_size))
     detection = Detection(blobs)
 
     # Run Filter Heuristics
