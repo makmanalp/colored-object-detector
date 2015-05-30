@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 import cv2.cv as cv
 import math
+import json
 
 from detector_state import DetectorState
 from detection import Detection, Blob
@@ -12,6 +13,12 @@ from detection import Detection, Blob
 from failure_cases import (TooManyResultsFailure)
 from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic, PhysicalSizeHeuristic,
                                HeuristicStack)
+
+import zmq
+context = zmq.Context()
+publisher = context.socket(zmq.PUB)
+publisher.bind("tcp://0.0.0.0:5561")
+
 
 """
 Ideas:
@@ -173,6 +180,15 @@ while(True):
             break
     else:
         print "> Success!"
+        # Select smallest blob
+        current_detection = detector_state.last_detection
+        if current_detection:
+            print "Sent"
+            smallest_blob = min(current_detection, key=lambda x: x.real_y)
+            msg = [{"name": "sample!", "x": smallest_blob.real_x, "y":
+                    smallest_blob.real_y}]
+            print msg
+            publisher.send(json.dumps(msg))
         # Update State
         detector_state.update_detections(detection)
 
