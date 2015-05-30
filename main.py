@@ -196,7 +196,7 @@ while(True):
                 # TODO: make sure we send only ONE chosen blob
                 #smallest_blob = min(detection, key=lambda x: x.real_y)
                 #print list(current_detection)
-                print blob
+                print blob.real_x, blob.real_y
                 msg = [{"name": "sample!", "x": blob.real_y, "y":
                         -blob.real_x}]
                 publisher.send(json.dumps(msg))
