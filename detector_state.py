@@ -27,13 +27,20 @@ class DetectorState(object):
         height = self.image_size[1]
         return height / (2.0 * math.tan(math.radians(self.camera_vertical_fov / 2.0)))
 
-    def find_blob_distance(self, pixel_y):
-        image_height = self.image_size[1]
+    def find_blob_distance(self, pixel_x, pixel_y):
+        image_width, image_height = self.image_size
+
         pixel_resolution = self.camera_vertical_fov / float(image_height)
         image_center = image_height / 2.0
         pixel_angle = (image_center - pixel_y) * pixel_resolution
         theta_pixel = self.camera_angle + pixel_angle
-        return self.camera_height * math.tan(math.radians(theta_pixel))
+        real_y = self.camera_height * math.tan(math.radians(theta_pixel))
+
+        pixel_resolution = self.camera_horizontal_fov / float(image_width)
+        image_center = image_width / 2.0
+        pixel_angle = (image_center - pixel_x) * pixel_resolution
+        real_x = self.camera_height * math.tan(math.radians(pixel_angle))
+        return real_x, real_y
 
     def find_blob_size(self, size, real_y):
         return (size * real_y) / self.focal_length

@@ -154,9 +154,10 @@ while(True):
     for contour in contours:
         (x, y), size = cv2.minEnclosingCircle(contour)
         area = cv2.contourArea(contour)
-        real_y = detector_state.find_blob_distance(y)
+        real_x, real_y = detector_state.find_blob_distance(y)
         real_size = detector_state.find_blob_size(size, real_y)
-        blobs.append(Blob(x, y, size, area, -1, real_y, real_size))
+        blobs.append(Blob(x, y, size, area, real_x, real_y, real_size))
+        print real_x, real_y
     detection = Detection(blobs)
 
     # Run Filter Heuristics
