@@ -43,7 +43,10 @@ class DetectorState(object):
 
     @property
     def last_detection(self):
-        return self.detections[:-1]
+        if len(self.detections) > 0:
+            return self.detections[-1]
+        else:
+            return None
 
     @property
     def current_detection(self):
