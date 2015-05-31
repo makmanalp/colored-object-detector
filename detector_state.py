@@ -38,9 +38,9 @@ class DetectorState(object):
 
         pixel_resolution = self.camera_horizontal_fov / float(image_width)
         image_center = image_width / 2.0
-        pixel_angle = (image_center - pixel_x) * pixel_resolution
-        real_x = self.camera_height * math.tan(math.radians(pixel_angle))
-        return -1.0 * real_x, real_y
+        pixel_angle = (pixel_x - image_center) * pixel_resolution
+        real_x = real_y * math.tan(math.radians(pixel_angle))
+        return real_x, real_y
 
     def find_blob_size(self, size, real_y):
         return (size * real_y) / self.focal_length
