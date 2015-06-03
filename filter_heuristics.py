@@ -127,29 +127,26 @@ class PhysicalSizeHeuristic(Heuristic):
     flat ground assumption, calculate approximate distance of a blob and filter
     those above the size threshold for their distance."""
 
-    def __init__(self, min_size=4.0, max_size=16.0, camera_angle=68.0,
-                 camera_height=70.0, camera_vertical_fov=43.30,
-                 object_size=15.0, **kwargs):
+    def __init__(self, min_size=4.0, max_size=16.0, **kwargs):
         super(PhysicalSizeHeuristic, self).__init__(**kwargs)
         self.min_size = min_size
         self.max_size = max_size
-        self.camera_angle = camera_angle
-        self.camera_height = camera_height
-        self.camera_vertical_fov = camera_vertical_fov
-        self.object_size = object_size
-        # self.fig = plt.figure()
-        # self.ax = self.fig.add_subplot(111)
 
     def filter(self, detection, detector_state):
-        size_vector = [blob.real_size for blob in detection]
-        # self.ax.clear()
-        # if self.debug:
-        #     pd.DataFrame(size_vector).plot(kind="hist", ax=self.ax,
-        #                                    xlim=(0, 70),
-        #                                    ylim=(0, 80),
-        #                                    bins=100)
-        return [1.0 if self.min_size < x < self.max_size else 0.0
-                for x in size_vector]
+
+        def weight(x):
+            if self.min_size <= x <= self.max_size:
+                return 1.0
+            elif x < self.min_size:
+                return 0.0
+            elif x > self.max_size:
+                # Penalize larger blobs inversely proportionally to how large
+                # they are compared to the upper limit
+                return self.max_size / x
+            else:
+                raise ValueError(x)
+
+        return [weight(blob.real_size) for blob in detection]
 
 
 class NormalBlobSizeHeuristic(Heuristic):
