@@ -218,8 +218,8 @@ class LargestHeuristic(Heuristic):
         if len(detection) == 0:
             return []
 
-        index, largest_blob = max(enumerate(detection),
-                                  key=lambda x: x[1].area)
+        largest_blob = max(detection, key=lambda x: x.area)
+
         return [1.0 if blob is largest_blob
                 else 0.0
                 for blob in detection]

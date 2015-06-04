@@ -115,7 +115,7 @@ blob_detector = cv2.SimpleBlobDetector(blob_params)
 heuristics = HeuristicStack({
     (PhysicalSizeHeuristic(debug=False), 1.0),
     (LargestHeuristic(debug=False), 0.5),
-    (NormalBlobSizeHeuristic(debug=False, min_size=1, max_size=400), 0.5)
+    (NormalBlobSizeHeuristic(debug=False), 0.5)
 })
 
 failure_cases = [
