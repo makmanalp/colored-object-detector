@@ -147,7 +147,7 @@ while(True):
     thresh = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
     #_, thresh = cv2.threshold(result, 1, 254, cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours(thresh,
-                                           cv2.RETR_TREE,
+                                           cv2.RETR_EXTERNAL,
                                            cv2.CHAIN_APPROX_SIMPLE)
 
     blobs = []
