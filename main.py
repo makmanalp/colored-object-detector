@@ -153,6 +153,8 @@ while(True):
     blobs = []
     for contour in contours:
         (x, y), size = cv2.minEnclosingCircle(contour)
+        # diameter is a more accurate measure of blob size than radius
+        size = size * 2
         area = cv2.contourArea(contour)
         real_x, real_y = detector_state.find_blob_distance(x, y)
         real_size = detector_state.find_blob_size(size, real_y)
