@@ -11,7 +11,7 @@ from detector_state import DetectorState
 from detection import Detection, Blob
 
 from failure_cases import (TooManyResultsFailure)
-from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic, PhysicalSizeHeuristic, DensityHeuristic2,
+from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic, PhysicalSizeHeuristic, DensityHeuristic2, DensityHeuristic3,
                                HeuristicStack)
 
 import zmq
@@ -172,7 +172,14 @@ while(True):
         real_x, real_y = detector_state.find_blob_distance(x, y)
         real_size = detector_state.find_blob_size(size, real_y)
 
-        blobs.append(Blob(x, y, contour, size, area, real_x, real_y, real_size))
+        # Calculate the area of holes in the contour
+        #contour_hole_area = sum([cv2.contourArea(cont)
+        #                         for j, cont in enumerate(contours)
+        #if hierarchy[0][j][3] == i])
+        contour_hole_area = None
+
+        blobs.append(Blob(x, y, contour, contour_hole_area, size, area, real_x,
+                          real_y, real_size))
 
     detection = Detection(blobs)
 

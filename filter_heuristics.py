@@ -258,4 +258,19 @@ class DensityHeuristic2(Heuristic):
         return [self.filter_item(blob, detector_state) for blob in detection]
         #return [cv2.(blob, detector_state) for blob in detection]
 
+
+class DensityHeuristic3(Heuristic):
+    """Density based on area - holes."""
+
+    def filter_item(self, blob, detector_state):
+
+        if blob.area < 2:
+            return 0.0
+        density = float(blob.area - blob.contour_hole_area) / (np.pi * (blob.size / 2.0)**2)
+        return density
+
+
+    def filter(self, detection, detector_state):
+        return [self.filter_item(blob, detector_state) for blob in detection]
+
 # cam: v4l2-ctl -d /dev/video1 -c exposure_auto=1,focus_auto=0,white_balance_temperature_auto=0,brightness=128,contrast=128,saturation=128,focus_absolute=0

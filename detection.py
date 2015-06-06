@@ -4,7 +4,7 @@ from collections import namedtuple
 
 STALENESS_THRESHOLD = 1  # seconds
 
-Blob = namedtuple('Blob', ['x', 'y', 'contour', 'size', 'area', 'real_x', 'real_y', 'real_size'])
+Blob = namedtuple('Blob', ['x', 'y', 'contour', 'contour_hole_area', 'size', 'area', 'real_x', 'real_y', 'real_size'])
 
 
 class Detection(object):
