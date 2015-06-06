@@ -4,6 +4,7 @@ import math
 
 import cv2.cv as cv
 import cv2
+import numpy as np
 
 import matplotlib.pyplot as plt
 plt.ion()
@@ -223,4 +224,38 @@ class LargestHeuristic(Heuristic):
         return [1.0 if blob is largest_blob
                 else 0.0
                 for blob in detection]
+
+import pyximport; pyximport.install(setup_args={"include_dirs": np.get_include()})
+import numpix
+
+
+class DensityHeuristic2(Heuristic):
+
+    def filter_item(self, blob, detector_state):
+
+        if blob.area < 2:
+            return 0.0
+        #density = numpix.num_pixels_in_contour(
+        #    detector_state.thresholded_image,
+        #    blob.contour) / cv2.contourArea(cv2.convexHull(blob.contour))
+
+        density = float(blob.area) / (np.pi * (blob.size / 2.0)**2)
+
+        if density < 0.3:
+            return 0.0
+        else:
+            return 1.0
+
+        density = float(blob.area) / cv2.contourArea(cv2.convexHull(blob.contour))
+
+        if density < 0.6:
+            return 0.0
+        else:
+            return 1.0
+
+
+    def filter(self, detection, detector_state):
+        return [self.filter_item(blob, detector_state) for blob in detection]
+        #return [cv2.(blob, detector_state) for blob in detection]
+
 # cam: v4l2-ctl -d /dev/video1 -c exposure_auto=1,focus_auto=0,white_balance_temperature_auto=0,brightness=128,contrast=128,saturation=128,focus_absolute=0

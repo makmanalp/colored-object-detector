@@ -11,7 +11,7 @@ from detector_state import DetectorState
 from detection import Detection, Blob
 
 from failure_cases import (TooManyResultsFailure)
-from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic, PhysicalSizeHeuristic,
+from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic, PhysicalSizeHeuristic, DensityHeuristic2,
                                HeuristicStack)
 
 import zmq
@@ -114,8 +114,9 @@ blob_detector = cv2.SimpleBlobDetector(blob_params)
 
 heuristics = HeuristicStack({
     (PhysicalSizeHeuristic(debug=False), 1.0),
-    (LargestHeuristic(debug=False), 0.5),
-    (NormalBlobSizeHeuristic(debug=False), 0.5)
+    #(LargestHeuristic(debug=False), 0.5),
+    (NormalBlobSizeHeuristic(debug=False), 0.5),
+    (DensityHeuristic2(debug=False), 0.5)
 })
 
 failure_cases = [
@@ -145,20 +146,21 @@ while(True):
     # TODO: find a way around this conversion
     thresh = cv2.cvtColor(result, cv2.COLOR_HSV2BGR)
     thresh = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+    detector_state.thresholded_image = thresh
     #_, thresh = cv2.threshold(result, 1, 254, cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours(thresh,
                                            cv2.RETR_EXTERNAL,
                                            cv2.CHAIN_APPROX_SIMPLE)
 
     blobs = []
-    for contour in contours:
+    for i, contour in enumerate(contours):
         (x, y), size = cv2.minEnclosingCircle(contour)
         # diameter is a more accurate measure of blob size than radius
         size = size * 2
         area = cv2.contourArea(contour)
         real_x, real_y = detector_state.find_blob_distance(x, y)
         real_size = detector_state.find_blob_size(size, real_y)
-        blobs.append(Blob(x, y, size, area, real_x, real_y, real_size))
+        blobs.append(Blob(x, y, contour, size, area, real_x, real_y, real_size))
     detection = Detection(blobs)
 
     # Run Filter Heuristics
