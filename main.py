@@ -61,7 +61,9 @@ else:
     raise ValueError("Must specify either --cam or --file!")
 
 
-detector_state = DetectorState((640, 480), 128, 5, approx_object_size=15.0)
+detector_state = DetectorState((640, 480), 128, 5,
+                               approx_object_size=15.0,
+                               camera_angle=75.0)
 
 
 
@@ -78,11 +80,11 @@ def make_modifier(index, lower_or_upper):
 cv.NamedWindow("image", flags=cv.CV_WINDOW_NORMAL)
 cv.MoveWindow("image", 20, 20)
 cv.ResizeWindow("image", 640, 480)
-cv.CreateTrackbar("h_low", "image", 0, 255, make_modifier(0, True))
-cv.CreateTrackbar("h_high", "image", 150, 255, make_modifier(0, False))
+cv.CreateTrackbar("h_low", "image", 217, 255, make_modifier(0, True))
+cv.CreateTrackbar("h_high", "image", 255, 255, make_modifier(0, False))
 cv.CreateTrackbar("s_low", "image", 0, 255, make_modifier(1, True))
-cv.CreateTrackbar("s_high", "image", 157, 255, make_modifier(1, False))
-cv.CreateTrackbar("v_low", "image", 152, 255, make_modifier(2, True))
+cv.CreateTrackbar("s_high", "image", 255, 255, make_modifier(1, False))
+cv.CreateTrackbar("v_low", "image", 0, 255, make_modifier(2, True))
 cv.CreateTrackbar("v_high", "image", 255, 255, make_modifier(2, False))
 
 cv.NamedWindow("original", flags=cv.CV_WINDOW_NORMAL)
@@ -149,18 +151,29 @@ while(True):
     detector_state.thresholded_image = thresh
     #_, thresh = cv2.threshold(result, 1, 254, cv2.THRESH_BINARY)
     contours, hierarchy = cv2.findContours(thresh,
-                                           cv2.RETR_EXTERNAL,
+                                           cv2.RETR_TREE,
                                            cv2.CHAIN_APPROX_SIMPLE)
 
     blobs = []
     for i, contour in enumerate(contours):
+
+        # If this is not a top-level blob, skip it
+        parent = hierarchy[0][i][3]
+        if not parent == -1:
+            continue
+
         (x, y), size = cv2.minEnclosingCircle(contour)
+
         # diameter is a more accurate measure of blob size than radius
         size = size * 2
         area = cv2.contourArea(contour)
+
+        # Calculate real-world measurements
         real_x, real_y = detector_state.find_blob_distance(x, y)
         real_size = detector_state.find_blob_size(size, real_y)
+
         blobs.append(Blob(x, y, contour, size, area, real_x, real_y, real_size))
+
     detection = Detection(blobs)
 
     # Run Filter Heuristics
