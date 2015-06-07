@@ -226,8 +226,8 @@ class LargestHeuristic(Heuristic):
                 else 0.0
                 for blob in detection]
 
-import pyximport; pyximport.install(setup_args={"include_dirs": np.get_include()})
-import numpix
+#import pyximport; pyximport.install(setup_args={"include_dirs": np.get_include()})
+#import numpix
 
 
 class DensityHeuristic2(Heuristic):
