@@ -77,8 +77,9 @@ class HeuristicStack(object):
             heuristic_name = heuristic.__class__.__name__
             heuristic_values[heuristic_name] = [weight * x for x in heuristic_result]
 
-            heuristic.print_time()
-            self.print_heuristic_result(heuristic, heuristic_result)
+            if heuristic.debug:
+                heuristic.print_time()
+                self.print_heuristic_result(heuristic, heuristic_result)
 
         heuristic_total = map(sum, zip(*heuristic_values.values()))
 
