@@ -62,8 +62,7 @@ else:
 
 
 detector_state = DetectorState((640, 480), 128, 5,
-                               approx_object_size=15.0,
-                               camera_angle=75.0)
+                               approx_object_size=15.0)
 
 
 
