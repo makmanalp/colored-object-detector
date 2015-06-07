@@ -2,7 +2,7 @@ import math
 
 class DetectorState(object):
 
-    def __init__(self, resolution, brightness, fps, camera_angle=68.0,
+    def __init__(self, resolution, brightness, fps, camera_angle=58.0,
                  camera_height=70.0, camera_vertical_fov=43.30,
                  camera_horizontal_fov=70.42, approx_object_size=15.0):
 
