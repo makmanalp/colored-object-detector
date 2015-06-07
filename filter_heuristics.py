@@ -235,12 +235,12 @@ class DensityHeuristic2(Heuristic):
 
         if blob.area < 2:
             return 0.0
+
         #density = numpix.num_pixels_in_contour(
         #    detector_state.thresholded_image,
         #    blob.contour) / cv2.contourArea(cv2.convexHull(blob.contour))
 
         density = float(blob.area) / (np.pi * (blob.size / 2.0)**2)
-
         if density < 0.3:
             return 0.0
         else:
@@ -256,7 +256,6 @@ class DensityHeuristic2(Heuristic):
 
     def filter(self, detection, detector_state):
         return [self.filter_item(blob, detector_state) for blob in detection]
-        #return [cv2.(blob, detector_state) for blob in detection]
 
 
 class DensityHeuristic3(Heuristic):
