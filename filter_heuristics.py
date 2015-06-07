@@ -154,7 +154,7 @@ class PhysicalSizeHeuristic(Heuristic):
 class NormalBlobSizeHeuristic(Heuristic):
     """Filter blobs that are just too large or too small to be realistic."""
 
-    def __init__(self, min_size=6, max_size=40, **kwargs):
+    def __init__(self, min_size=6, max_size=250, **kwargs):
         super(NormalBlobSizeHeuristic, self).__init__(**kwargs)
         self.min_size = min_size
         self.max_size = max_size
