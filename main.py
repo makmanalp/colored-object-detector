@@ -6,6 +6,7 @@ import cv2
 import cv2.cv as cv
 import math
 import json
+from subprocess import call
 
 from detector_state import DetectorState
 from detection import Detection, Blob
@@ -51,14 +52,21 @@ parser.add_argument('--file', dest='file',
                     help='Get video from a file path.')
 parser.add_argument('--cam', dest='cam',
                     help='Get video from a camera id (numeric).')
+parser.add_argument('--disable-cam-settings', dest='disable_cam_settings', action="store_true",
+                    help='Disable automatic setting of camera settings with v4l2-ctl')
 args = parser.parse_args()
 
 if args.cam:
+    if not args.disable_cam_settings:
+        command = ["v4l2-ctl", "-d", "/dev/video1", "-c",
+                   "exposure_auto=1,focus_auto=0,white_balance_temperature_auto=0,brightness=128,contrast=128,saturation=128,focus_absolute=0,exposure_absolute=50"]
+        call(command, shell=True)
     cap = cap_camera(int(args.cam))
 elif args.file:
     cap = cap_file(args.file)
 else:
     raise ValueError("Must specify either --cam or --file!")
+
 
 
 detector_state = DetectorState((640, 480), 128, 5,
