@@ -86,17 +86,21 @@ def make_modifier(index, lower_or_upper):
 
 cv.NamedWindow("image", flags=cv.CV_WINDOW_NORMAL)
 cv.MoveWindow("image", 20, 20)
-cv.ResizeWindow("image", 640, 480)
 cv.CreateTrackbar("h_low", "image", 217, 255, make_modifier(0, True))
 cv.CreateTrackbar("h_high", "image", 255, 255, make_modifier(0, False))
 cv.CreateTrackbar("s_low", "image", 0, 255, make_modifier(1, True))
 cv.CreateTrackbar("s_high", "image", 255, 255, make_modifier(1, False))
 cv.CreateTrackbar("v_low", "image", 0, 255, make_modifier(2, True))
 cv.CreateTrackbar("v_high", "image", 255, 255, make_modifier(2, False))
+cv.ResizeWindow("image", 700, 700)
 
 cv.NamedWindow("original", flags=cv.CV_WINDOW_NORMAL)
 cv.MoveWindow("original", 650, 20)
 cv.ResizeWindow("original", 640, 480)
+
+cv.NamedWindow("heuristics", flags=cv.CV_WINDOW_NORMAL)
+cv.MoveWindow("heuristics", 400, 400)
+cv.ResizeWindow("heuristics", 640, 480)
 
 lower_blue = np.array([
     cv.GetTrackbarPos("h_low", "image"),

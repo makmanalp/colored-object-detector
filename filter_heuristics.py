@@ -44,9 +44,6 @@ class HeuristicStack(object):
         self.display_window()
 
     def display_window(self):
-        cv.NamedWindow("heuristics")
-        cv.MoveWindow("heuristics", 20, 20)
-        cv.ResizeWindow("heuristics", 640, 480)
         for heuristic, _ in self.heuristics:
             name = heuristic.__class__.__name__
             cv.CreateTrackbar(name, "heuristics", 0, 1, self.make_set_debug(heuristic))
