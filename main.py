@@ -214,20 +214,19 @@ while(True):
         detector_state.update_detections(detection)
 
     if not must_fail:
-        for blob in detection:
-            if blob in detection.chosen_blobs:
-                cv.Circle(cv.fromarray(frame),
-                          (int(blob.x), int(blob.y)),
-                          int(math.ceil(blob.size)),
-                          (0, 0, 255),
-                          thickness=2, lineType=8, shift=0)
+        for blob in detection.chosen_blobs:
+            cv.Circle(cv.fromarray(frame),
+                      (int(blob.x), int(blob.y)),
+                      int(math.ceil(blob.size)),
+                      (0, 0, 255),
+                      thickness=2, lineType=8, shift=0)
 
-                # Select smallest blob
-                # TODO: make sure we send only ONE chosen blob
-                #smallest_blob = min(detection, key=lambda x: x.real_y)
-                msg = [{"name": "sample!", "x": blob.real_y, "y":
-                        -blob.real_x}]
-                publisher.send(json.dumps(msg))
+            # Select smallest blob
+            # TODO: make sure we send only ONE chosen blob
+            #smallest_blob = min(detection, key=lambda x: x.real_y)
+            msg = [{"name": "sample!", "x": blob.real_y, "y":
+                    -blob.real_x}]
+            publisher.send(json.dumps(msg))
 
 
     # Display the resulting frame
