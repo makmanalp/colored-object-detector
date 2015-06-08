@@ -6,6 +6,7 @@ import cv2
 import cv2.cv as cv
 import math
 import json
+import sys
 from subprocess import call
 
 from detector_state import DetectorState
@@ -60,7 +61,10 @@ if args.cam:
     if not args.disable_cam_settings:
         command = ["v4l2-ctl", "-d", "/dev/video1", "-c",
                    "exposure_auto=1,focus_auto=0,white_balance_temperature_auto=0,brightness=128,contrast=128,saturation=128,focus_absolute=0,exposure_absolute=50"]
-        call(command, shell=True)
+        ret_val = call(" ".join(command), shell=True)
+        if ret_val != 0:
+            print "Giving up trying to set camera settings. Retry a few times, fix it or run with --disable-cam-settings"
+            sys.exit(1)
     cap = cap_camera(int(args.cam))
 elif args.file:
     cap = cap_file(args.file)
