@@ -74,24 +74,15 @@ detector_state = DetectorState((640, 480), 128, 5,
 
 
 
+from collections import OrderedDict
+import threshold
 
-def make_modifier(index, lower_or_upper):
-    def inner(x):
-        if lower_or_upper:
-            lower_blue[index] = x
-        else:
-            upper_blue[index] = x
-    return inner
+d = OrderedDict([('h_low', 0), ('h_high', 254), ('s_low', 0), ('s_high', 254), ('v_low', 0), ('v_high', 254)])
+white_sample = threshold.Threshold("white_sample", d)
 
 
 cv.NamedWindow("image", flags=cv.CV_WINDOW_NORMAL)
 cv.MoveWindow("image", 20, 20)
-cv.CreateTrackbar("h_low", "image", 217, 255, make_modifier(0, True))
-cv.CreateTrackbar("h_high", "image", 255, 255, make_modifier(0, False))
-cv.CreateTrackbar("s_low", "image", 0, 255, make_modifier(1, True))
-cv.CreateTrackbar("s_high", "image", 255, 255, make_modifier(1, False))
-cv.CreateTrackbar("v_low", "image", 0, 255, make_modifier(2, True))
-cv.CreateTrackbar("v_high", "image", 255, 255, make_modifier(2, False))
 cv.ResizeWindow("image", 700, 700)
 
 cv.NamedWindow("original", flags=cv.CV_WINDOW_NORMAL)
@@ -102,28 +93,6 @@ cv.NamedWindow("heuristics", flags=cv.CV_WINDOW_NORMAL)
 cv.MoveWindow("heuristics", 400, 400)
 cv.ResizeWindow("heuristics", 640, 480)
 
-lower_blue = np.array([
-    cv.GetTrackbarPos("h_low", "image"),
-    cv.GetTrackbarPos("s_low", "image"),
-    cv.GetTrackbarPos("v_low", "image")
-])
-upper_blue = np.array([
-    cv.GetTrackbarPos("h_high", "image"),
-    cv.GetTrackbarPos("s_high", "image"),
-    cv.GetTrackbarPos("v_high", "image")
-])
-
-
-def threshold_hsv(img):
-    mask = cv2.inRange(img, lower_blue, upper_blue)
-    return cv2.bitwise_and(img, img, mask=mask)
-
-blob_params = cv2.SimpleBlobDetector_Params()
-blob_params.minThreshold = 0
-blob_params.maxThreshold = 255
-blob_params.filterByArea = True
-blob_params.minArea = 10
-blob_detector = cv2.SimpleBlobDetector(blob_params)
 
 heuristics = HeuristicStack({
     (PhysicalSizeHeuristic(debug=False), 1.0),
@@ -152,7 +121,7 @@ while(True):
 
     # Threshold it
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    result = threshold_hsv(hsv)
+    result = white_sample.threshold(hsv)
     detector_state.current_image = result
 
     # Run detection
