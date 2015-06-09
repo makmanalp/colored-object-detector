@@ -6,7 +6,7 @@ Installation
 - Install opencv 2.4.10 and python bindings. For ubuntu:
     * Ubuntu: sudo apt-get install libopencv-dev python-opencv
     * OSX: brew install opencv
-- Install numpy: sudo -H pip install numpy
+- Install numpy: sudo -H pip install numpy zmq
 
 Usage
 -----
