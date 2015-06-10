@@ -1,26 +1,21 @@
-# TODO: show graphs of heuristic stack etc
-
 import argparse
-import numpy as np
 import cv2
 import cv2.cv as cv
 import math
 import json
 import sys
 from subprocess import call
+from collections import OrderedDict
 
 from detector_state import DetectorState
 from detection import Detection, Blob
-
+import threshold
 from failure_cases import (TooManyResultsFailure)
-from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic, PhysicalSizeHeuristic, DensityHeuristic2, DensityHeuristic3,
-                               HeuristicStack)
+from filter_heuristics import (NormalBlobSizeHeuristic, LargestHeuristic,
+                               PhysicalSizeHeuristic, DensityHeuristic2,
+                               DensityHeuristic3, HeuristicStack)
 
 import zmq
-context = zmq.Context()
-publisher = context.socket(zmq.PUB)
-publisher.bind("tcp://0.0.0.0:5561")
-
 
 """
 Ideas:
@@ -57,6 +52,10 @@ parser.add_argument('--disable-cam-settings', dest='disable_cam_settings', actio
                     help='Disable automatic setting of camera settings with v4l2-ctl')
 args = parser.parse_args()
 
+context = zmq.Context()
+publisher = context.socket(zmq.PUB)
+publisher.bind("tcp://0.0.0.0:5561")
+
 if args.cam:
     if not args.disable_cam_settings:
         command = ["v4l2-ctl", "-d", "/dev/video1", "-c",
@@ -77,11 +76,9 @@ detector_state = DetectorState((640, 480), 128, 5,
                                approx_object_size=15.0)
 
 
-
-from collections import OrderedDict
-import threshold
-
-d = OrderedDict([('h_low', 0), ('h_high', 254), ('s_low', 0), ('s_high', 254), ('v_low', 0), ('v_high', 254)])
+d = OrderedDict([('h_low', 0), ('h_high', 255),
+                 ('s_low', 0), ('s_high', 255),
+                 ('v_low', 0), ('v_high', 255)])
 white_sample = threshold.Threshold("white_sample", d)
 
 
