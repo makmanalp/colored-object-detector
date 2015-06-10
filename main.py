@@ -195,12 +195,19 @@ while(True):
                       (0, 0, 255),
                       thickness=2, lineType=8, shift=0)
 
-            # Select smallest blob
-            # TODO: make sure we send only ONE chosen blob
-            #smallest_blob = min(detection, key=lambda x: x.real_y)
-            msg = [{"name": "sample!", "x": blob.real_y, "y":
-                    -blob.real_x}]
+        # Select smallest blob
+        # TODO: make sure we send only ONE chosen blob
+        if len(detection.chosen_blobs) > 0:
+            best_blob = min(detection.chosen_blobs, key=lambda x: x.real_y)
+            msg = [{"name": "sample!", "x": best_blob.real_y, "y":
+                    -best_blob.real_x}]
             publisher.send(json.dumps(msg))
+
+            cv.Circle(cv.fromarray(frame),
+                      (int(best_blob.x), int(best_blob.y)),
+                      int(math.ceil(best_blob.size)),
+                      (255, 255, 255),
+                      thickness=2, lineType=8, shift=0)
 
 
     # Display the resulting frame
