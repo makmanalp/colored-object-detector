@@ -58,7 +58,8 @@ publisher.bind("tcp://0.0.0.0:5561")
 
 if args.cam:
     if not args.disable_cam_settings:
-        command = ["v4l2-ctl", "-d", "/dev/video1", "-c",
+        camera_name = "/dev/video{}".format(int(args.cam))
+        command = ["v4l2-ctl", "-d", camera_name, "-c",
                    "exposure_auto=1,focus_auto=0,white_balance_temperature_auto=0,brightness=128,contrast=128,saturation=128,focus_absolute=0,exposure_absolute=50"]
         ret_val = call(" ".join(command), shell=True)
         if ret_val != 0:
